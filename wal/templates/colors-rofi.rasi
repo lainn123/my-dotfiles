@@ -1,0 +1,13 @@
+* {
+    wal-bg: {background};
+    wal-fg: {foreground};
+    wal-color0: {color0};
+    wal-color1: {color1};
+    wal-color2: {color2};
+    wal-color3: {color3};
+    wal-color4: {color4};
+    wal-color5: {color5};
+    wal-color6: {color6};
+    wal-color7: {color7};
+    wal-color8: {color8};
+}
