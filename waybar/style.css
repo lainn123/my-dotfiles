@@ -1,0 +1,261 @@
+@import url("/home/bocchi/.cache/wal/colors-waybar.css");
+
+/* Mapeamento das variáveis do Pywal */
+@define-color color-bg                           @background;
+@define-color color-fg                           @foreground;
+@define-color color-button-bg                    @color6;
+@define-color color-button-fg                    @background;
+@define-color color-button-urgent-bg             @color1;
+@define-color color-button-urgent-fg             @background;
+@define-color color-workspace-button-bg          @color2;
+@define-color player-bg                          @color6;
+@define-color player-fg                          #ffffff;
+@define-color player-paused                      @color2;
+@define-color color-workspace-button-fg          @foreground;
+@define-color color-workspace-button-hover-bg    @color6;
+@define-color color-workspace-button-hover-fg    @foreground;
+@define-color color-workspace-button-focused-bg  @color6;
+@define-color color-workspace-button-focused-fg  @background;
+@define-color color-taskbar-button-minimized-bg  @color6;
+@define-color color-taskbar-button-minimized-fg  @background;
+@define-color color-taskbar-button-active-bg     @color9;
+@define-color color-taskbar-button-active-fg     @background;
+@define-color color-widget-audio-bg              @color6;
+@define-color color-widget-audio-fg              @background;
+@define-color color-widget-audio-hover-bg        @color6;
+@define-color color-widget-audio-hover-fg        @background;
+@define-color color-widget-audio-muted-bg        @color7;
+@define-color color-widget-audio-muted-fg        @foreground;
+@define-color color-widget-clock-bg              @color6;
+@define-color color-widget-clock-fg              @background;
+@define-color color-widget-battery-bg            @color6;
+@define-color color-widget-battery-fg            @background;
+@define-color color-widget-battery-low-bg        @color1;
+@define-color color-widget-battery-low-fg        @background;
+@define-color color-widget-battery-low-blink-bg  @color9;
+@define-color color-widget-battery-low-blink-fg  @background;
+@define-color color-widget-backlight-bg          @color5;
+@define-color color-widget-backlight-fg          @background;
+@define-color color-widget-temperature-bg        @color6;
+@define-color color-widget-temperature-fg        @background;
+@define-color color-widget-temperature-critical-bg @color1;
+@define-color color-widget-temperature-critical-fg @background;
+@define-color color-widget-memory-bg             @color6;
+@define-color color-widget-memory-fg             @background;
+@define-color color-widget-cpu-bg                @color6;
+@define-color color-widget-cpu-fg                #ffffff;
+@define-color color-widget-power-profile-balanced-bg @color5;
+@define-color color-widget-power-profile-balanced-fg @background;
+@define-color color-widget-power-profile-performance-bg @color1;
+@define-color color-widget-power-profile-performance-fg @background;
+@define-color color-widget-power-profile-saver-bg @color2;
+@define-color color-widget-power-profile-saver-fg @background;
+@define-color color-widget-network-bg            @color2;
+@define-color color-widget-network-fg            @background;
+@define-color color-widget-tray-bg               @color6;
+@define-color color-widget-tray-needs-attention   @color1;
+@define-color color-widget-custom-notification-bg @color6;
+@define-color color-widget-custom-notification-fg @foreground;
+@define-color color-widget-power-bg              @color6;
+@define-color color-widget-power-fg              @background;
+@define-color color-widget-window-bg             @color6;
+@define-color color-widget-window-fg             @background;
+@define-color color-widget-layout-bg             @color6;
+@define-color color-widget-layout-fg             @background;
+@define-color color-widget-keyboard-state-bg     @color3;
+@define-color color-widget-keyboard-state-fg     @background;
+@define-color color-widget-language-bg           @color5;
+@define-color color-widget-language-fg           @background;
+@define-color color-widget-keymode-bg            @color4;
+@define-color color-widget-keymode-fg            @background;
+@define-color color-tooltip-bg                   @color3;
+@define-color color-tooltip-fg                   @foreground;
+@define-color color-menu-bg                      @color3;
+@define-color color-menuitem-hover-bg            @color2;
+@define-color color-menuitem-hover-fg            @background;
+@define-color color-gradient-fade                @color15;
+
+* {
+    font-family: "Go Mono";
+    font-size: 10px;
+    border: none;
+    border-radius: 12px;
+}
+
+window#waybar {
+    background-color: rgba(15, 15, 20, 0);
+    border: none;
+    margin: 2px 5px;
+}
+
+window#waybar > * {
+    margin: 2px 0px;
+}
+
+window#waybar.hidden {
+    opacity: 0;
+}
+
+#layout {
+    transition: none;
+    padding: 1px 6px;
+    min-height: 0px;
+    min-width: 0px;
+    margin-left: 2px;
+    background: linear-gradient(to top, @color-widget-layout-bg, mix(@color-widget-layout-bg, @color-gradient-fade, 0.25));
+    color: @color-widget-layout-fg;
+}
+
+button {
+    border: none;
+    background-color: @color-button-bg;
+}
+
+button:hover {
+    background: inherit;
+}
+
+#pulseaudio:hover {
+    background-color: #ffffff;
+    color: @color-widget-audio-hover-fg;
+}
+
+#workspaces {
+    padding: 0;
+    margin: 0;
+}
+
+#workspaces button {
+    transition: none;
+    padding: 1px 4px;
+    min-height: 0px;
+    min-width: 0px;
+    margin: 0px 2px;
+    background: linear-gradient(to top, @color-workspace-button-bg, mix(@color-workspace-button-bg, @color-gradient-fade, 0.25));
+    color: @color-workspace-button-fg;
+}
+
+#workspaces button:hover {
+    background: linear-gradient(to top, @color-workspace-button-hover-bg, mix(@color-workspace-button-hover-bg, @color-gradient-fade, 0.25));
+    color: @color-workspace-button-hover-fg;
+}
+
+#workspaces button.active,
+#workspaces button.overview {
+    background: linear-gradient(to top, @color-workspace-button-focused-bg, mix(@color-workspace-button-focused-bg, @color-gradient-fade, 0.25));
+    color: @color-workspace-button-focused-fg;
+}
+
+#workspaces button.urgent {
+    background: linear-gradient(to top, @color-button-urgent-bg, mix(@color-button-urgent-bg, @color-gradient-fade, 0.25));
+    color: @color-button-urgent-fg;
+}
+
+#taskbar {
+    padding: 0px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+#taskbar.empty {
+    margin: 0px;
+    padding: 0px;
+    border-radius: 0px;
+    border: none;
+    background-color: transparent;
+}
+
+#taskbar button {
+    padding: 1px 6px;
+    min-width: 0px;
+    background: linear-gradient(to top, @color-workspace-button-bg, mix(@color-workspace-button-bg, @color-gradient-fade, 0.25));
+    color: @color-workspace-button-fg;
+}
+
+#taskbar button.active {
+    background: linear-gradient(to top, @color-taskbar-button-active-bg, mix(@color-taskbar-button-active-bg, @color-gradient-fade, 0.25));
+    color: @color-taskbar-button-active-fg;
+}
+
+#taskbar button.minimized {
+    background: linear-gradient(to top, @color-taskbar-button-minimized-bg, mix(@color-taskbar-button-minimized-bg, @color-gradient-fade, 0.25));
+    color: @color-taskbar-button-minimized-fg;
+}
+
+#taskbar button.urgent {
+    background: linear-gradient(to top, @color-button-urgent-bg, mix(@color-button-urgent-bg, @color-gradient-fade, 0.25));
+    color: @color-button-urgent-fg;
+}
+
+#, #battery, #cpu, #memory, #disk, #temperature, #custom-brightness, #network,
+#pulseaudio, #wireplumber, #custom-media, #tray, #mode, #idle_inhibitor,
+#scratchpad, #power-profiles-daemon, #custom-notification, #custom-power,
+#keyboard-state, #language, #keymode, #window, #mpd {
+    padding: 1px 6px;
+    margin: 0px 2px;
+}
+
+#custom-power {
+    margin-left: 4px;
+    background: linear-gradient(to top, @color-widget-power-bg, mix(@color-widget-power-bg, @color-gradient-fade, 0.25));
+    color: #ffffff;
+    font-family: "JetBrainsMono Nerd Font Propo", monospace;
+    font-size: 12px;
+}
+
+#window {
+    margin: 0px;
+    background: linear-gradient(to top, @color-widget-window-bg, mix(@color-widget-window-bg, @color-gradient-fade, 0.25));
+    color: @color-widget-window-fg;
+}
+
+window#waybar.empty #window {
+    background: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+#clock {
+    background: linear-gradient(to top, @color-widget-clock-bg, mix(@color-widget-clock-bg, @color-gradient-fade, 0.25));
+    color: #ffffff;
+    padding: 1px 6px;
+}
+
+#cpu {
+    min-width: 0px;
+    background: linear-gradient(to top, @color-widget-cpu-bg, mix(@color-widget-cpu-bg, @color-gradient-fade, 0.25));
+    color: @color-widget-cpu-fg;
+}
+
+#memory {
+    background: linear-gradient(to top, @color-widget-memory-bg, mix(@color-widget-memory-bg, @color-gradient-fade, 0.25));
+    color: #ffffff;
+}
+
+
+#pulseaudio {
+    background: linear-gradient(to top, @color-widget-audio-bg, mix(@color-widget-audio-bg, @color-gradient-fade, 0.25));
+    color: #ffffff;
+}
+
+#temperature {
+    background: linear-gradient(to top, @color-widget-temperature-bg, mix(@color-widget-temperature-bg, @color-gradient-fade, 0.25));
+    color: #ffffff;
+}
+
+#tray {
+    background: linear-gradient(to top, @color-widget-tray-bg, mix(@color-widget-tray-bg, @color-gradient-fade, 0.25));
+}
+
+#mpris {
+    background-color: @player-bg;
+    color: @player-fg;
+    padding: 1px 8px;
+    margin: 0px 2px;
+    border-radius: 8px;
+}
+
+#mpris.paused {
+    background-color: @player-paused;
+    color: @foreground;
+}

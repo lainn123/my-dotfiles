@@ -1,0 +1,155 @@
+// -*- mode: jsonc -*-
+{
+    "layer": "top",
+    "position": "top",
+    "height": 24,
+    "spacing": 6,
+
+    "modules-left": [
+        "mango/workspaces",
+        "mango/layout",
+        "wlr/taskbar",
+        "mango/window"
+    ],
+    "modules-center": [
+        "mpris"
+    ],
+    "modules-right": [
+        "tray",
+        "mango/language",
+        "mango/keymode",
+        "cpu",
+        "memory",
+        "temperature",
+        "pulseaudio",
+        "custom/brightness",
+        "clock",
+        "custom/power"
+    ],
+
+    "mpris": {
+        "format": "󰎈 {artist} - {title}",
+        "format-paused": "󰏤 <i>{artist} - {title}</i>",
+        "max-length": 30,
+        "on-click": "playerctl play-pause",
+        "on-click-right": "playerctl next",
+        "on-scroll-up": "playerctl next",
+        "on-scroll-down": "playerctl previous"
+    },
+
+    "mango/workspaces": {
+        "format": "{icon}",
+        "hide-empty": true,
+        "on-click": "activate",
+        "on-click-right": "toggle",
+        "overview-label": "OVERVIEW",
+        "on-scroll-up": "hyprctl dispatch workspace e+1",
+        "on-scroll-down": "hyprctl dispatch workspace e-1"
+    },
+
+    "mango/keymode": {
+        "format": "{}"
+    },
+
+    "mango/window": {
+        "format": "{}",
+        "icon": false,
+        "max-length": 40,
+        "on-click": "bash ~/.config/mango/scripts/screenshot.sh",
+        "on-click-right": "bash ~/tool/shotTranslate.sh shot"
+    },
+
+    "mango/layout": {
+        "format": "{}"
+    },
+
+    "mango/language": {
+        "format": "{short}",
+        "format-en": "󰌌 US",
+        "format-ru": "󰌌 RU",
+        "format-pt": "󰌌 BR"
+    },
+
+    "wlr/taskbar": {
+        "format": "{icon}",
+        "icon-size": 15,
+        "all-outputs": false,
+        "tooltip-format": "{title}",
+        "markup": true,
+        "on-click": "activate",
+        "on-click-middle": "minimize",
+        "on-click-right": "close",
+        "ignore-list": ["Rofi", "wofi"]
+    },
+
+    "tray": {
+        "icon-size": 15,
+        "spacing": 6
+    },
+
+    "clock": {
+        "format": " {:%H:%M}",
+        "format-alt": " {:L%A, %b %d}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "calendar": {
+            "mode": "year",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span color='#ffead3'><b>{}</b></span>",
+                "days": "<span color='#ecc6d9'><b>{}</b></span>",
+                "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+                "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+                "today": "<span color='#ff6666'><b><u>{}</u></b></span>"
+            }
+        }
+    },
+
+    "cpu": {
+        "interval": 2,
+        "format": " {usage}%",
+        "on-click": "foot fish -i -c 'btop'"
+    },
+
+    "memory": {
+        "format": " {}%",
+        "on-click": "foot fish -i -c 'btop'"
+    },
+
+    "temperature": {
+        "critical-threshold": 80,
+        "format": "{icon} {temperatureC}°C",
+        "tooltip": true,
+        "tooltip-format": "{temperatureF}°F",
+        "format-icons": ["", "", ""]
+    },
+
+
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "tooltip": false,
+        "format-muted": " Muted",
+        "on-click": "pamixer -t",
+        "on-click-right": "pavucontrol",
+        "on-scroll-up": "pamixer -i 2",
+        "on-scroll-down": "pamixer -d 2",
+        "scroll-step": 5,
+        "format-icons": {
+            "headphone": "",
+            "hands-free": "",
+            "headset": "",
+            "phone": "",
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
+        }
+    },
+
+    "custom/power": {
+        "format": "󰣇",
+        "tooltip": false,
+        "on-click": "wlogout -C ~/.config/mango/wlogout/style.css -l ~/.config/mango/wlogout/layout -b 6 --protocol layer-shell",
+        "on-click-right": "sleep 0.1s && swaync-client -t -sw"
+    }
+}
