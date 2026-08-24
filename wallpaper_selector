@@ -1,0 +1,216 @@
+use gdk::prelude::*;
+use gtk::prelude::*;
+use std::fs;
+use std::path::PathBuf;
+use std::process::Command;
+use std::thread;
+
+const THUMB_WIDTH: i32 = 180;
+const THUMB_HEIGHT: i32 = 110;
+
+fn hex_to_rgba(hex_str: &str, alpha: f32) -> String {
+    let hex = hex_str.trim_start_matches('#');
+    if hex.len() < 6 {
+        return format!("rgba(30, 30, 30, {})", alpha);
+    }
+    let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
+    let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
+    let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
+    format!("rgba({}, {}, {}, {})", r, g, b, alpha)
+}
+
+fn apply_pywal_theme() {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let colors_file = format!("{}/.cache/wal/colors", home);
+
+    if let Ok(content) = fs::read_to_string(colors_file) {
+        let colors: Vec<&str> = content.lines().collect();
+        let bg_hex = colors.get(0).copied().unwrap_or("#1e1e1e");
+        let accent_hex = colors.get(4).copied().unwrap_or("#7aa2f7");
+        let fg_hex = colors.get(7).copied().unwrap_or("#ffffff");
+
+        let bg_rgba = hex_to_rgba(bg_hex, 0.75);
+        let card_rgba = hex_to_rgba(accent_hex, 0.25);
+        let accent_rgba = hex_to_rgba(accent_hex, 0.85);
+
+        let css_data = format!(
+            "window {{
+                background-color: {bg_rgba};
+                border-radius: 16px;
+                border: 1px solid {border_rgba};
+            }}
+            scrolledwindow, viewport, flowbox {{
+                background-color: transparent;
+            }}
+            flowbox {{
+                padding: 12px;
+            }}
+            flowboxchild {{
+                background-color: {card_rgba};
+                border-radius: 14px;
+                padding: 6px;
+                margin-bottom: 10px;
+                transition: all 0.2s ease-in-out;
+                border: 1px solid transparent;
+            }}
+            flowboxchild:hover, flowboxchild:selected {{
+                background-color: {accent_rgba};
+            }}",
+            bg_rgba = bg_rgba,
+            border_rgba = hex_to_rgba(fg_hex, 0.15),
+            card_rgba = card_rgba,
+            accent_rgba = accent_rgba
+        );
+
+        let provider = gtk::CssProvider::new();
+        if provider.load_from_data(css_data.as_bytes()).is_ok() {
+            if let Some(screen) = gdk::Screen::default() {
+                gtk::StyleContext::add_provider_for_screen(
+                    &screen,
+                    &provider,
+                    gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+                );
+            }
+        }
+    }
+}
+
+fn main() {
+    if gtk::init().is_err() {
+        eprintln!("Falha ao inicializar o GTK.");
+        return;
+    }
+
+    let window = gtk::Window::new(gtk::WindowType::Toplevel);
+    window.set_title("Wallpaper Selector");
+    window.set_type_hint(gdk::WindowTypeHint::Utility);
+    window.set_decorated(false);
+
+    if let Some(screen) = gdk::Screen::default() {
+        if let Some(visual) = screen.rgba_visual() {
+            if screen.is_composited() {
+                window.set_visual(Some(&visual));
+            }
+        }
+
+        if let Some(display) = gdk::Display::default() {
+            let monitor = display.primary_monitor().unwrap_or_else(|| display.monitor(0).unwrap());
+            let geometry = monitor.geometry();
+            let sidebar_width = 340;
+            let margin = 12;
+
+            window.set_default_size(sidebar_width, geometry.height() - (margin * 2));
+            window.move_(geometry.width() - sidebar_width - margin, margin);
+        }
+    }
+
+    apply_pywal_theme();
+
+    let scrolled = gtk::ScrolledWindow::new(None::<&gtk::Adjustment>, None::<&gtk::Adjustment>);
+    scrolled.set_policy(gtk::PolicyType::Never, gtk::PolicyType::Automatic);
+
+    let flowbox = gtk::FlowBox::new();
+    flowbox.set_valign(gtk::Align::Start);
+    flowbox.set_max_children_per_line(1);
+    flowbox.set_selection_mode(gtk::SelectionMode::Single);
+
+    scrolled.add(&flowbox);
+    window.add(&scrolled);
+
+   // Evento ao clicar em uma imagem
+    flowbox.connect_child_activated(move |_, child| {
+        if let Some(widget) = child.child() {
+            if let Ok(box_container) = widget.downcast::<gtk::Box>() {
+                unsafe {
+                    if let Some(path_ptr) = box_container.data::<String>("filepath") {
+                        let filepath = path_ptr.as_ref().clone();
+
+                        // Troca o wallpaper rapidamente
+                        let _ = Command::new("pkill").arg("swaybg").status();
+                        let _ = Command::new("swaybg")
+                            .args(["-i", &filepath, "-m", "fill"])
+                            .spawn();
+
+                        // Thread de background para os processos pesados
+                        thread::spawn(move || {
+                            // 1. O Pywal gera as novas cores no sistema
+                            let _ = Command::new("wal")
+                                .args(["-i", &filepath, "-n", "-q"])
+                                .status();
+
+                            // 2. Atualiza o tema da própria janela do Rust
+                            glib::idle_add_local(move || {
+                                apply_pywal_theme();
+                                glib::ControlFlow::Break
+                            });
+
+                            // 3. Recarrega os outros programas com as novas cores
+                            let _ = Command::new("hyprctl").arg("reload").status();
+                            let _ = Command::new("pkill").args(["-SIGUSR2", "waybar"]).status();
+                            let _ = Command::new("makoctl").arg("reload").status(); // <-- AQUI!
+                        });
+                    }
+                }
+            }
+        }
+    });
+
+    // Canal assíncrono para enviar caminhos de arquivos (Strings)
+    let (sender, receiver) = async_channel::unbounded::<String>();
+
+    // Processa o carregamento na UI conforme as rotas chegam
+    let flowbox_ui = flowbox.clone();
+    glib::MainContext::default().spawn_local(async move {
+        while let Ok(path_str) = receiver.recv().await {
+            if let Ok(pixbuf) = gdk_pixbuf::Pixbuf::from_file_at_scale(
+                &path_str,
+                THUMB_WIDTH,
+                THUMB_HEIGHT,
+                true,
+            ) {
+                let image = gtk::Image::from_pixbuf(Some(&pixbuf));
+                let box_container = gtk::Box::new(gtk::Orientation::Vertical, 0);
+                box_container.pack_start(&image, true, true, 0);
+
+                unsafe {
+                    box_container.set_data("filepath", path_str);
+                }
+
+                flowbox_ui.insert(&box_container, -1);
+                flowbox_ui.show_all();
+            }
+        }
+    });
+
+    // Thread para escancear diretórios no HD sem travar a interface
+    thread::spawn(move || {
+        let home = std::env::var("HOME").unwrap_or_default();
+        let wallpaper_dir = PathBuf::from(format!("{}/Imagens/Wallpapers", home));
+
+        if let Ok(entries) = fs::read_dir(wallpaper_dir) {
+            let mut paths: Vec<PathBuf> = entries
+                .filter_map(|e| e.ok().map(|entry| entry.path()))
+                .filter(|p| {
+                    p.extension()
+                        .and_then(|ext| ext.to_str())
+                        .map(|ext| matches!(ext.to_lowercase().as_str(), "png" | "jpg" | "jpeg" | "webp"))
+                        .unwrap_or(false)
+                })
+                .collect();
+
+            paths.sort();
+
+            for path in paths {
+                let path_str = path.to_string_lossy().to_string();
+                let _ = sender.send_blocking(path_str);
+            }
+        }
+    });
+
+    window.connect_destroy(|_| {
+        gtk::main_quit();
+    });
+
+    window.show_all();
+    gtk::main();
+}
