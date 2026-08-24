@@ -1,36 +1,48 @@
 #!/usr/bin/env bash
 
+# Cancela a execução se ocorrer qualquer erro
 set -e
 
-echo "=== 1. Instalando Dependências do Sistema ==="
-# Atualiza os pacotes e instala dependências base
-sudo pacman -Syu --needed --noconfirm \
-    git \
-    stow \
-    hyprland \
-    mako \
-    python-pywal \
-    libnotify \
-    gdk-pixbuf2 \
-    gtk3
+CONFIG_DIR="$HOME/.config"
 
-# Se usar AUR (ex: Paru ou Yay) para pacotes adicionais
-if command -v paru &> /dev/null; then
-    paru -S --needed --noconfirm swaybg async-channel
+echo "==> Criando diretório de configuração se não existir..."
+mkdir -p "$CONFIG_DIR"
+
+echo "==> Instalando programas e pacotes necessários..."
+# Altere 'pacman -S --needed' se estiver usando outra distro/gerenciador
+sudo pacman -S --needed --noconfirm \
+    btop \
+    fish \
+    foot \
+    hyprland \
+    micro \
+    starship \
+    python-pywal \
+    waybar \
+    rofi \
+    rust
+
+echo "==> Copiando diretórios de configuração para $CONFIG_DIR..."
+# Copia as pastas visíveis na imagem para o ~/.config
+cp -rf btop "$CONFIG_DIR/"
+cp -rf fish "$CONFIG_DIR/"
+cp -rf foot "$CONFIG_DIR/"
+cp -rf hypr "$CONFIG_DIR/"
+cp -rf micro "$CONFIG_DIR/"
+cp -rf starship "$CONFIG_DIR/"
+cp -rf waybar "$CONFIG_DIR/"
+
+# Trata a pasta do wal/templates
+if [ -d "wal" ]; then
+    mkdir -p "$CONFIG_DIR/wal"
+    cp -rf wal/* "$CONFIG_DIR/wal/"
 fi
 
-echo "=== 2. Criando Estrutura de Pastas ==="
-mkdir -p ~/.config
-mkdir -p ~/.cache/wal
+# Copia arquivos avulsos de configuração
+echo "==> Copiando arquivos individuais..."
+if [ -f "config.rasi" ]; then
+    mkdir -p "$CONFIG_DIR/rofi"
+    cp -f config.rasi "$CONFIG_DIR/rofi/"
+fi
 
-echo "=== 3. Aplicando Links Simbólicos com Stow ==="
-# O GNU Stow espelha a estrutura da pasta para a sua $HOME
-stow -R mako
-stow -R hypr
-stow -R wal
-
-echo "=== 4. Configurando Links do Pywal ==="
-# Garante que o link simbólico do Mako para a cache do Pywal exista
-ln -sf ~/.cache/wal/mako ~/.config/mako/config
-
-echo "=== Instalação e Configuração Concluídas! ==="
+echo "==> Instalação concluída com sucesso!"
