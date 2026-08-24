@@ -1,0 +1,13 @@
+{
+    "autosu": true,
+    "colorscheme": "simple",
+    "diffgutter": true,
+    "mkparents": true,
+    "rmtrailingws": true,
+    "savecursor": true,
+    "saveundo": true,
+    "scrollbar": true,
+    "softwrap": true,
+    "statusformatr": "Ln %(line)/%(lines) | Col %(col) | %(branch) %(hash)",
+    "tabstospaces": true
+}
